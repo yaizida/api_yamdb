@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Category(models.model):
+class Category(models.Model):
     name = models.CharField(
         verbose_name='Название',
         max_length=256
@@ -19,7 +19,7 @@ class Category(models.model):
         return self.name
 
 
-class Genre(models.model):
+class Genre(models.Model):
     name = models.CharField(
         verbose_name='Название',
         max_length=256
