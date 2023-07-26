@@ -142,7 +142,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор отзыва',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         blank=False,
         verbose_name='Оценка'
     )
