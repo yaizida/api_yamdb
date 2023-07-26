@@ -69,7 +69,8 @@ DATABASES = {
     }
 }
 
-
+AUTH_USER_MODEL = 'reviews.User'
+DEFAULT_USER = 'user'
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
