@@ -122,3 +122,64 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class UserContent(models.Model):
+    """Абстрактная модель для отзывов и комментариев"""
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
+    text = models.TextField(
+        blank=False,
+        verbose_name='Текст'
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Review(UserContent):
+    """Модель отзывов к произведениям"""
+    title = models.ForeignKey(
+        Title,
+        related_name='reviews',
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
+    score = models.PositiveSmallIntegerField(
+        verbose_name='Оценка',
+        blank=False,
+    )
+
+    class Meta(UserContent.Meta):
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        constraints = [
+            models.UniqueConstraint(fields=['author', 'title'], name='unique_review')
+        ]
+
+    def __str__(self):
+        return self.text
+
+
+class Comment(UserContent):
+    """Модель комментариев к отзывам"""
+    review = models.ForeignKey(
+        Review,
+        related_name='comments',
+        on_delete=models.CASCADE,
+        verbose_name='Отзыв'
+    )
+
+    class Meta(UserContent.Meta):
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
