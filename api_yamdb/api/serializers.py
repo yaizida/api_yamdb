@@ -1,12 +1,22 @@
-from rest_framework import serializers
-# from rest_framework.relations import SlugRelatedField
-# from rest_framework.validators import UniqueTogetherValidator
-# from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import (ModelSerializer, )
 
+from .mixins import UsernameValidationMixin
+from rest_framework.serializers import (CharField, EmailField, Serializer)
 from reviews.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SignupSerializer(Serializer, UsernameValidationMixin):
+    username = CharField(
+        required=True,
+        max_length=150,
+    )
+    email = EmailField(
+        required=True,
+        max_length=150,
+    )
+
+
+class UserSerializer(ModelSerializer, UsernameValidationMixin):
     class Meta:
-        fields = '__all__'
         model = User
+        fields = ('__all__')
