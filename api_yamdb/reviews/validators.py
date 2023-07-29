@@ -11,7 +11,7 @@ ERROR_USERNAME_SYMBOL = "Нельзя использовать символы '{
 
 
 def validate_non_reserved(value):
-    if value in settings.RESERVED_USERNAMES:
+    if value in RESERVED_USERNAMES:
         raise ValidationError(ERROR_USERNAME_RESERVED.format(value=value))
     return value
 
