@@ -16,20 +16,6 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer
 )
-from .permissions import IsAuthorOrAdminOrModerator
-
-
-class BaseViewSet(viewsets.ModelViewSet):
-    """Базовый класс для обработки разрешений."""
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy']:
-            self.permission_classes = [
-                IsAuthenticatedOrReadOnly,
-                IsAuthorOrAdminOrModerator
-            ]
-        return super().get_permissions()
 
 
 class CategoryViewSet(CategoryGenreMixinSet):
@@ -51,7 +37,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleEditSerializer
 
 
-class ReviewViewSet(BaseViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для отзывов."""
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
@@ -73,7 +59,7 @@ class ReviewViewSet(BaseViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(BaseViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для комментариев."""
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination

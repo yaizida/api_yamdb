@@ -47,31 +47,15 @@ class TitleEditSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор для отзывов"""
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
+    author = serializers.SlugRelatedField()
 
     class Meta:
         model = Review
         fields = ['id', 'text', 'author', 'score', 'pub_date']
 
-    def validate_score(self, value):
-        """Проверка оценки"""
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                "Оценка должна быть в диапазоне от 1 до 10"
-            )
-        return value
-
 
 class CommentSerializer(serializers.ModelSerializer):
-    """Сериализатор для комментариев"""
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username'
-    )
+    author = serializers.SlugRelatedField()
 
     class Meta:
         model = Comment
