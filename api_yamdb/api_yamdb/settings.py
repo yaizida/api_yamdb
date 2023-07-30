@@ -13,8 +13,7 @@ SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
-
+APPEND_SLASH = False
 # Application definition
 
 INSTALLED_APPS = [
@@ -95,12 +94,12 @@ AUTH_PASSWORD_VALIDATORS = [
 #  подключаем движок filebased.EmailBackend
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 # указываем директорию, в которую будут складываться файлы писем
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, "users/sent_emails")
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 ADMIN_EMAIL = "from@example.com"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=999),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # Internationalization

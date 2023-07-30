@@ -17,6 +17,8 @@ class User(AbstractUser):
     email = models.EmailField(
         unique=True,
         max_length=150,
+        null=False,
+        blank=False,
     )
     role = models.CharField(
         choices=ROLES_CHOICES,
@@ -50,11 +52,11 @@ class User(AbstractUser):
 
     @property
     def is_moderator(self):
-        pass
+        return self.role == 'moderator'
 
     @property
     def is_admin(self):
-        pass
+        return (self.role == 'admin') or self.is_staff
 
 
 class Category(models.Model):
