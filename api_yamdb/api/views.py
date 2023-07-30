@@ -1,12 +1,14 @@
 from rest_framework import viewsets
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 from .mixins import CategoryGenreMixinSet
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleGetSerializer,
     TitleEditSerializer,
+    ReviewSerializer,
+    CommentSerializer
 )
 
 
@@ -27,3 +29,13 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return TitleGetSerializer
         return TitleEditSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet для отзывов."""
+    serializer_class = ReviewSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для комментариев."""
+    serializer_class = CommentSerializer
