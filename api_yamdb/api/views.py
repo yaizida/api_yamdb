@@ -60,7 +60,7 @@ class ReviewViewSet(BaseViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         return Review.objects.filter(title_id=title_id).annotate(
-            rating=Avg('score')
+            score=Avg('score')
         )
 
     def perform_create(self, serializer):
