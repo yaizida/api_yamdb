@@ -100,7 +100,7 @@ class Title(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    yaer = models.IntegerField('Год выпуска')
+    year = models.IntegerField(verbose_name='Год выпуска')
     description = models.TextField(
         verbose_name='Описание',
         null=True,

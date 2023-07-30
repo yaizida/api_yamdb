@@ -14,4 +14,3 @@
 [Бурковский Никита](https://github.com/yaizida)
 [Александр Лаврушенков](https://github.com/lavralex)
 [Антон Клеймёнов](https://github.com/1329474)
-
