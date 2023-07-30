@@ -1,27 +1,11 @@
-import random
-import string
-from os import getenv
-
 from django.core.mail import send_mail
-
-from dotenv import load_dotenv
-
-load_dotenv()
+from django.conf import settings
 
 
 CONFIRMATION_CODE_LENGTH = 10
 DEFAULT_SUBJECT = 'Код подтверждения от Yamdb'
 DEFAULT_MESSAGE = 'Ваш код подтверждения - {}'
-DEFAULT_FROM_EMAIL = getenv('EMAIL_HOST_USER')
-
-
-def get_code():
-    return ''.join(
-        random.choices(
-            population=string.digits,
-            k=CONFIRMATION_CODE_LENGTH,
-        )
-    )
+DEFAULT_FROM_EMAIL = settings.ADMIN_EMAIL
 
 
 def send_email(user_email, code):

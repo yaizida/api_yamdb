@@ -2,18 +2,20 @@ from rest_framework import routers
 
 from django.urls import path, include
 
-from .views import SignupView, UserViewSet, UserMeAPIView
+from .views import (UserViewSet, UserMeAPIView,
+                    send_confirmation_code, GetAuthTokenSerializer)
 
 app_name = 'api'
 
 VERSION_1 = 'v1/'
 
 auth_urls = [
-    path('auth/signup/', SignupView.as_view(), name='signup'),
+    path('auth/signup/', send_confirmation_code, name='signup'),
+    path('auth/token/', GetAuthTokenSerializer.as_view(), neme='get_token')
 ]
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
+router.register('users', UserViewSet, basename='user')
 
 urlpatterns = [
     path(VERSION_1 + 'users/me/', UserMeAPIView.as_view(), name='self'),
