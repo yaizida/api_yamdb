@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from api.permissions import AdminOnly
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
@@ -11,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from django.db import IntegrityError
 from rest_framework.validators import ValidationError
-
 from reviews.models import User
 from .serializers import (UserSerializer, GetAuthTokenSerializer,
                           SignUpSerializer, UserProfileSerializer)
@@ -21,7 +19,6 @@ from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from reviews.models import Category, Genre, Title, Review, Comment
 from .mixins import CategoryGenreMixinSet
@@ -33,7 +30,7 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer
 )
-from .permissions import IsAuthorOrAdminOrModerator
+from .permissions import IsAuthorOrAdminOrModerator, AdminOnly
 
 
 ERROR_SIGNUP_USERNAME_OR__MAIL = (
@@ -112,7 +109,7 @@ class UserViewSet(ModelViewSet):
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-      
+
 class BaseViewSet(viewsets.ModelViewSet):
     """Базовый класс для обработки разрешений."""
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -151,17 +148,19 @@ class ReviewViewSet(BaseViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_title_id(self):
+        return self.kwargs.get('title_id')
+
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        return Review.objects.filter(title_id=title_id).annotate(
+        return Review.objects.filter(title_id=self.get_title_id()).annotate(
             score=Avg('score')
         )
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, id=self.get_title_id())
 
-        if Review.objects.filter(author=self.request.user, title=title).exists():
+        if Review.objects.filter(author=self.request.user,
+                                 title=title).exists():
             raise ValidationError("Вы уже оставляли отзыв на это произведение")
 
         serializer.save(author=self.request.user, title=title)
@@ -173,11 +172,12 @@ class CommentViewSet(BaseViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def get_review_id(self):
+        return self.kwargs.get('review_id')
+
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        return Comment.objects.filter(review_id=review_id)
+        return Comment.objects.filter(review_id=self.get_review_id())
 
     def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(Review, id=self.get_review_id())
         serializer.save(author=self.request.user, review=review)

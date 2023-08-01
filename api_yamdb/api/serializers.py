@@ -68,8 +68,6 @@ class GetAuthTokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(
         required=True, max_length=150,
     )
-=======
-
 
 
 class CategorySerializer(serializers.ModelSerializer):
