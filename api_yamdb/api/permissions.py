@@ -1,7 +1,19 @@
-"""Модуль с классами для проверки прав доступа к API."""
 from rest_framework import permissions
 
 
+class AdminOnly(permissions.BasePermission):
+    """AdminOnly permission.
+    Разрешает доступ к ресурсу, если пользователь аутентифицирован и является
+    администратором или суперпользователем.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (
+            request.user.is_admin or request.user.is_superuser)
+
+"""Модуль с классами для проверки прав доступа к API."""
+          
+          
 class IsAuthorOrAdminOrModerator(permissions.BasePermission):
     """Класс для проверки прав доступа к API."""
     def has_object_permission(self, request, view, obj):
@@ -13,3 +25,4 @@ class IsAuthorOrAdminOrModerator(permissions.BasePermission):
             request.user.is_moderator or
             request.user.is_admin
         )
+          
