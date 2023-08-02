@@ -1,6 +1,8 @@
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator
 
 ROLES_CHOICES = (
     ('user', 'Пользователь'),
@@ -100,7 +102,15 @@ class Title(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    year = models.IntegerField(verbose_name='Год выпуска')
+    year = models.IntegerField(
+        verbose_name='Год создания',
+        validators=[
+            MaxValueValidator(
+                timezone.now().year,
+                message='Год создания не может быть позже нынешнего'
+            ),
+        ]
+    )
     description = models.TextField(
         verbose_name='Описание',
         null=True,

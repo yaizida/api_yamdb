@@ -18,7 +18,9 @@ from .registration.token_generator import get_token_for_user
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import ValidationError
 from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from reviews.models import Category, Genre, Title, Review, Comment
 from .mixins import CategoryGenreMixinSet
 from .serializers import (
@@ -29,7 +31,8 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer
 )
-from .permissions import IsAuthorOrAdminOrModerator, AdminOnly
+from .permissions import IsAuthorOrAdminOrModerator, AdminOnly, IsAdminOrReadOnly
+from .filters import TitleFilter
 
 
 ERROR_SIGNUP_USERNAME_OR__MAIL = (
@@ -125,15 +128,25 @@ class BaseViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(CategoryGenreMixinSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = LimitOffsetPagination
 
 
 class GenreViewSet(CategoryGenreMixinSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = LimitOffsetPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    )
+    permission_classes = [IsAdminOrReadOnly]
+    pagination_class = LimitOffsetPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -151,7 +164,10 @@ class ReviewViewSet(BaseViewSet):
         return self.kwargs.get('title_id')
 
     def get_queryset(self):
-        return Review.objects.filter(title_id=self.get_title_id())
+        title = get_object_or_404(
+            Title, pk=self.kwargs.get('title_id')
+        )
+        return title.reviews.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.get_title_id())
