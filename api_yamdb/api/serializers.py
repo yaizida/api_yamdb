@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import (validate_non_reserved,)
+from .mixins import UsernameValidationMixin
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer, UsernameValidationMixin):
     """Сериализатор модели User."""
 
     class Meta:
@@ -18,46 +19,27 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class UserProfileSerializer(UserSerializer):
+class UserProfileSerializer(UserSerializer, UsernameValidationMixin):
     """Сериализатор модели User для профиля пользователя."""
     class Meta(UserSerializer.Meta):
         read_only_fields = ("role",)
 
 
-class SignUpSerializer(serializers.Serializer):
+class SignUpSerializer(serializers.Serializer, UsernameValidationMixin):
     """Сериализатор для регистрации."""
 
     username = serializers.CharField(
         max_length=150,
-        required=False,
+        required=True,
         validators=[validate_non_reserved, ],
     )
     email = serializers.EmailField(
         max_length=150,
-        required=False,
+        required=True
     )
 
-    def validate(self, data):
-        """Запрещает пользователям присваивать себе имя me
-        и использовать повторные username и email."""
 
-        if not User.objects.filter(
-            username=data.get("username"), email=data.get("email")
-        ).exists():
-            if User.objects.filter(username=data.get("username")):
-                raise serializers.ValidationError(
-                    "Пользователь с таким username уже существует"
-                )
-
-            if User.objects.filter(email=data.get("email")):
-                raise serializers.ValidationError(
-                    "Пользователь с таким Email уже существует"
-                )
-
-        return data
-
-
-class GetAuthTokenSerializer(serializers.Serializer):
+class GetAuthTokenSerializer(serializers.Serializer, UsernameValidationMixin):
     """Сериализатор для получения токена."""
 
     username = serializers.CharField(
