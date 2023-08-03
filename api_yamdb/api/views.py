@@ -10,17 +10,12 @@ from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from django.db import IntegrityError
 from rest_framework.validators import ValidationError
-from reviews.models import User
-from .serializers import (UserSerializer, GetAuthTokenSerializer,
-                          SignUpSerializer, UserProfileSerializer)
-from .registration.send_email import send_email
-from .registration.token_generator import get_token_for_user
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import ValidationError
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+
 from reviews.models import Category, Genre, Title, Review, Comment
 from .mixins import CategoryGenreMixinSet
 from .serializers import (
@@ -31,7 +26,16 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer
 )
-from .permissions import IsAuthorOrAdminOrModerator, AdminOnly, IsAdminOrReadOnly
+from .serializers import (UserSerializer, GetAuthTokenSerializer,
+                          SignUpSerializer, UserProfileSerializer)
+from .permissions import (
+    IsAuthorOrAdminOrModerator,
+    AdminOnly,
+    IsAdminOrReadOnly
+)
+from reviews.models import User
+from .registration.send_email import send_email
+from .registration.token_generator import get_token_for_user
 from .filters import TitleFilter
 
 
@@ -164,10 +168,7 @@ class ReviewViewSet(BaseViewSet):
         return self.kwargs.get('title_id')
 
     def get_queryset(self):
-        title = get_object_or_404(
-            Title, pk=self.kwargs.get('title_id')
-        )
-        return title.reviews.all()
+        return Review.objects.filter(title_id=self.get_title_id())
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.get_title_id())
