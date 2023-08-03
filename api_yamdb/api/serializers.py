@@ -51,12 +51,14 @@ class GetAuthTokenSerializer(serializers.Serializer, UsernameValidationMixin):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для категорий"""
     class Meta:
         fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для жанров"""
     class Meta:
         fields = ('name', 'slug')
         model = Genre
