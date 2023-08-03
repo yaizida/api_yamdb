@@ -45,6 +45,7 @@ ERROR_SIGNUP_USERNAME_OR__MAIL = (
 
 
 class CreateUserView(CreateAPIView):
+    """Вьюсет для создания пользователя"""
     permission_classes = [AllowAny]
 
     def post(self, request):

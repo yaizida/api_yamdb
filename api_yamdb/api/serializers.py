@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
-from reviews.validators import (validate_non_reserved,)
 from .mixins import UsernameValidationMixin
 
 
@@ -20,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer, UsernameValidationMixin):
         )
 
 
-class UserProfileSerializer(UserSerializer, UsernameValidationMixin):
+class UserProfileSerializer(UserSerializer):
     """Сериализатор модели User для профиля пользователя."""
     class Meta(UserSerializer.Meta):
         read_only_fields = ("role",)
@@ -32,7 +31,6 @@ class SignUpSerializer(serializers.Serializer, UsernameValidationMixin):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[validate_non_reserved, ],
     )
     email = serializers.EmailField(
         max_length=150,
@@ -46,7 +44,6 @@ class GetAuthTokenSerializer(serializers.Serializer, UsernameValidationMixin):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[validate_non_reserved, ],
     )
     confirmation_code = serializers.CharField(
         required=True, max_length=150,

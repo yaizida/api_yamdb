@@ -17,6 +17,7 @@ def validate_non_reserved(value):
 
 
 def validate_username_allowed_chars(value):
+    """Запрещает использовать символы из перечня запрещенных символов"""
     invalid_chars = USERNAME_INVALID_PATTERN.findall(value)
     if invalid_chars:
         raise ValidationError(
