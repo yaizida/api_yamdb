@@ -130,6 +130,7 @@ class BaseViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(CategoryGenreMixinSet):
+    """ViewSet для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -137,6 +138,7 @@ class CategoryViewSet(CategoryGenreMixinSet):
 
 
 class GenreViewSet(CategoryGenreMixinSet):
+    """ViewSet для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -144,6 +146,7 @@ class GenreViewSet(CategoryGenreMixinSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """ViewSet для произведений."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     )
