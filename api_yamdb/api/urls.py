@@ -12,7 +12,9 @@ from .views import (
     UserViewSet,
     GetAuthTokenView
 )
+
 VERSION_1 = 'v1/'
+
 auth_urls = [
     path('auth/signup/', CreateUserView.as_view(), name='signup'),
     path('auth/token/', GetAuthTokenView.as_view(), name='token')
