@@ -1,4 +1,7 @@
+import os
+
 from pathlib import Path
+from datetime import timedelta
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,8 +13,7 @@ SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
-
+APPEND_SLASH = False
 # Application definition
 
 INSTALLED_APPS = [
@@ -69,7 +71,8 @@ DATABASES = {
     }
 }
 
-
+AUTH_USER_MODEL = 'reviews.User'
+DEFAULT_USER = 'user'
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -86,7 +89,26 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+# Дополнения для проекта
 
+#  подключаем движок filebased.EmailBackend
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# указываем директорию, в которую будут складываться файлы писем
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+ADMIN_EMAIL = "from@example.com"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=999),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 # Internationalization
 
