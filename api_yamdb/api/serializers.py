@@ -106,14 +106,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'text', 'author', 'score', 'pub_date']
 
-    def validate_score(self, value):
-        """Проверка оценки"""
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                "Оценка должна быть в диапазоне от 1 до 10"
-            )
-        return value
-
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев"""
