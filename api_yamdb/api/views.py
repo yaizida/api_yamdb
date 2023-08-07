@@ -10,11 +10,12 @@ from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView
 from django.db import IntegrityError
 from rest_framework.validators import ValidationError
-from rest_framework import viewsets
+from rest_framework import viewsets, response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, Review, Comment
 from .mixins import CategoryGenreMixinSet
@@ -35,11 +36,10 @@ from .permissions import (
 )
 from reviews.models import User
 from .registration.send_email import send_email
-from .registration.token_generator import get_token_for_user
 from .filters import TitleFilter
 
 
-ERROR_SIGNUP_USERNAME_OR__MAIL = (
+ERROR_SIGNUP_USERNAME_OR_MAIL = (
     'Пользователь с таким email или username уже существует'
 )
 
@@ -59,9 +59,9 @@ class CreateUserView(CreateAPIView):
                 email=email
             )
         except IntegrityError:
-            raise ValidationError(ERROR_SIGNUP_USERNAME_OR__MAIL)
+            raise ValidationError(ERROR_SIGNUP_USERNAME_OR_MAIL)
+
         confirmation_code = default_token_generator.make_token(user)
-        print(confirmation_code)
         user.confirmation_code = confirmation_code
         user.save()
         send_email(user.email, user.confirmation_code)
@@ -73,19 +73,19 @@ class GetAuthTokenView(APIView):
 
     def post(self, request):
         serializer = GetAuthTokenSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get("username")
         confirmation_code = serializer.validated_data.get("confirmation_code")
         user = get_object_or_404(User, username=username)
-        if user.confirmation_code != confirmation_code:
-            return Response(
-                {"confirmation_code": ["Неверный код подтверждения"]},
-                status=status.HTTP_400_BAD_REQUEST,
+        if default_token_generator.check_token(user, confirmation_code):
+            token = AccessToken.for_user(user)
+            return response.Response(
+                {'token': str(token)}, status=status.HTTP_200_OK
             )
-        return Response(get_token_for_user(user), status=status.HTTP_200_OK)
+        return response.Response(
+            {'confirmation_code': 'Неверный код подтверждения!'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class UserViewSet(ModelViewSet):

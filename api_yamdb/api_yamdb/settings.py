@@ -128,3 +128,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+
+RESERVED_USERNAMES = ('me',)
+MAX_LENGTH_FIELDS = 150

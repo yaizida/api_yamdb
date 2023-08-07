@@ -3,29 +3,29 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator
-
-ROLES_CHOICES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-)
+from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
 
 
 class User(AbstractUser):
+
+    class UserRoles(models.TextChoices):
+        USRER = 'user', ('User')
+        MODERATOR = 'moderator', ('Moderator')
+        ADMIN = 'admin', ('Admin')
+
     username = models.CharField(
         unique=True,
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
+        validators=[UsernameRegexValidator(), validate_non_reserved],
     )
     email = models.EmailField(
         unique=True,
-        max_length=150,
-        null=False,
-        blank=False,
+        max_length=settings.MAX_LENGTH_FIELDS
     )
     role = models.CharField(
-        choices=ROLES_CHOICES,
-        default=settings.DEFAULT_USER,
-        max_length=max(len(role) for role, _ in ROLES_CHOICES)
+        choices=UserRoles.choices,
+        default=UserRoles.USRER,
+        max_length=10
     )
     bio = models.TextField(blank=True, null=True)
     confirmation_code = models.CharField(
@@ -34,12 +34,12 @@ class User(AbstractUser):
         null=True
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         blank=True,
         null=True,
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         blank=True,
         null=True,
     )
@@ -54,11 +54,12 @@ class User(AbstractUser):
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == self.UserRoles.MODERATOR or self.is_staff
 
     @property
     def is_admin(self):
-        return (self.role == 'admin') or self.is_staff
+        return ((self.role == self.UserRoles.ADMIN) or self.is_superuser
+                or self.is_staff)
 
 
 class Category(models.Model):
