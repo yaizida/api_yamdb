@@ -1,4 +1,5 @@
-from django.utils import timezone
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -61,40 +62,34 @@ class User(AbstractUser):
         return (self.role == 'admin') or self.is_staff
 
 
-class Category(models.Model):
+class BaseCategoryGenre(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=256
-    )
-    slug = models.SlugField(
-        verbose_name='Slug категории',
+        max_length=256,
         unique=True,
     )
-
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
-
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=256
-    )
     slug = models.SlugField(
-        verbose_name='Slug жанра',
+        verbose_name='Слаг',
         unique=True
     )
 
     class Meta:
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
+        abstract = True
 
     def __str__(self):
         return self.name
+
+
+class Category(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+
+class Genre(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
@@ -102,11 +97,11 @@ class Title(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    year = models.IntegerField(
+    year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
         validators=[
             MaxValueValidator(
-                timezone.now().year,
+                date.today().year,
                 message='Год создания не может быть позже нынешнего'
             ),
         ]
@@ -119,7 +114,6 @@ class Title(models.Model):
         Genre,
         related_name='titles',
         verbose_name='Жанр',
-        through='TitleGenre'
     )
     category = models.ForeignKey(
         Category,

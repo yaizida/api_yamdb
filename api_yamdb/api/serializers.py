@@ -64,7 +64,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleGetSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     "Сериализатор для GET запроса"
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
@@ -78,7 +78,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class TitleEditSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     "Сериализатор для ввода, изменения и удаления данных"
     category = serializers.SlugRelatedField(
         slug_field='slug',
