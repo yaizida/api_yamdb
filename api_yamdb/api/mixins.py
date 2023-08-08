@@ -1,8 +1,7 @@
 from rest_framework import mixins, viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
 
-from reviews.validators import (validate_non_reserved,
-                                validate_username_allowed_chars)
+from reviews.validators import (validate_non_reserved)
 
 
 class CategoryGenreMixinSet(
@@ -17,8 +16,7 @@ class CategoryGenreMixinSet(
     lookup_field = 'slug'
 
 
-class UsernameValidationMixin:
+class UsernameValidationMixin():
     def validate_username(self, value):
         value = validate_non_reserved(value)
-        validate_username_allowed_chars(value)
         return value

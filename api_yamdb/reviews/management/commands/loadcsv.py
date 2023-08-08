@@ -1,107 +1,94 @@
 import csv
 
+from django.db import connection
 from django.core.management import BaseCommand
-
-from reviews.models import (
-    User,
-    Category,
-    Genre,
-    Title,
-    TitleGenre,
-    Review,
-    Comment
-)
+from django.db.utils import IntegrityError
 
 FILE_PATH = 'static/data/'
 
+data_to_load_csv = {
+    'users':
+    """
+    INSERT INTO reviews_user
+    (id,username,email,role,bio,first_name,last_name,password,is_superuser,is_staff,is_active,date_joined)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, '', '', '', '', '')
+    """,
+    'category':
+    """
+    INSERT INTO reviews_category (id,name,slug)
+    VALUES (%s, %s, %s)
+    """,
+    'genre':
+    """
+    INSERT INTO reviews_genre (id,name,slug)
+    VALUES (%s, %s, %s)
+    """,
+    'titles':
+    """
+    INSERT INTO reviews_title (id,name,year,category_id)
+    VALUES (%s, %s, %s, %s)
+    """,
+    'genre_title':
+    """
+    INSERT INTO reviews_title_genre (id,title_id,genre_id)
+    VALUES (%s, %s, %s)
+    """,
+    'review':
+    """
+    INSERT INTO reviews_review (id,title_id,text,author_id,score,pub_date)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """,
+    'comments':
+    """
+    INSERT INTO reviews_comment (id,review_id,text,author_id,pub_date)
+    VALUES (%s, %s, %s, %s, %s)
+    """,
+}
+
 
 class Command(BaseCommand):
+    help = 'Импортирует данные из CSV файлов в базу данных'
+
+    def csv_load(self, file_name):
+        try:
+            with open(f'{FILE_PATH}{file_name}.csv', encoding='utf-8') as file:
+                reader = csv.reader(file)
+                next(reader)
+                data = []
+                for row in reader:
+                    data.append(row)
+                with connection.cursor() as cursor:
+                    cursor.executemany(
+                        data_to_load_csv[file_name],
+                        data
+                    )
+                    connection.commit()
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'Данные из файла {file_name}.csv успешно записанны'
+                    )
+                )
+        except IntegrityError as error:
+            msg = f'Ошибка при записи данных из {file_name}.csv:{error}'
+            raise IntegrityError(self.style.ERROR(msg))
+        except FileNotFoundError as error:
+            msg = (
+                f'Файл {file_name}.csv не найден по пути {FILE_PATH}: {error}'
+            )
+            raise FileNotFoundError(self.style.ERROR(msg))
+        except UnicodeDecodeError as error:
+            msg = f'Ошибка при декодировании данных из {file_name}.csv:{error}'
+            raise FileNotFoundError(self.style.ERROR(msg))
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'csv_names',
+            default=data_to_load_csv.keys(),
+            type=str,
+            nargs='*',
+            help='Название CSV файла'
+        )
 
     def handle(self, *args, **options):
-        with open(f'{FILE_PATH}users.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                User(
-                    id=row[0],
-                    username=row[1],
-                    email=row[2],
-                    role=row[3],
-                    bio=row[4],
-                    first_name=row[5],
-                    last_name=row[6],
-                ).save()
-            print('данные users.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}comments.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                Category(
-                    id=row[0],
-                    name=row[1],
-                    slug=row[2],
-                ).save()
-            print('данные comments.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}genre.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                Genre(
-                    id=row[0],
-                    name=row[1],
-                    slug=row[2],
-                ).save()
-            print('данные genre.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}titles.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                category_id = Category.objects.get(id=row[3])
-                Title(
-                    id=row[0],
-                    name=row[1],
-                    year=row[2],
-                    category=category_id,
-                ).save()
-            print('данные title.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}genre_title.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                title_id = Title.objects.get(id=row[1])
-                genre_id = Genre.objects.get(id=row[2])
-                TitleGenre(
-                    id=row[0],
-                    title=title_id,
-                    genre=genre_id,
-                ).save()
-            print('данные genre_title.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}review.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                author_id = User.objects.get(id=row[3])
-                title_id = Title.objects.get(id=row[1])
-                Review(
-                    id=row[0],
-                    author=author_id,
-                    text=row[2],
-                    pub_date=row[5],
-                    title=title_id,
-                    score=row[4],
-                ).save()
-            print('данные review.csv загруженны в базу данных')
-        with open(f'{FILE_PATH}comments.csv', encoding='utf-8') as file:
-            reader = csv.reader(file)
-            next(reader)
-            for row in reader:
-                author_id = User.objects.get(id=row[3])
-                review_id = Review.objects.get(id=row[1])
-                Comment(
-                    id=row[0],
-                    author=author_id,
-                    text=row[2],
-                    pub_date=row[4],
-                    review=review_id,
-                ).save()
-            print('данные comments.csv загруженны в базу данных')
+        for csv_name in options['csv_names']:
+            self.csv_load(csv_name)

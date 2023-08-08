@@ -1,31 +1,33 @@
-from django.utils import timezone
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator
+from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-ROLES_CHOICES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-)
 
 
 class User(AbstractUser):
+
+    class UserRoles(models.TextChoices):
+        USRER = 'user', ('User')
+        MODERATOR = 'moderator', ('Moderator')
+        ADMIN = 'admin', ('Admin')
+
     username = models.CharField(
         unique=True,
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
+        validators=[UsernameRegexValidator(), validate_non_reserved],
     )
     email = models.EmailField(
         unique=True,
-        max_length=150,
-        null=False,
-        blank=False,
+        max_length=settings.MAX_LENGTH_FIELDS
     )
     role = models.CharField(
-        choices=ROLES_CHOICES,
-        default=settings.DEFAULT_USER,
-        max_length=max(len(role) for role, _ in ROLES_CHOICES)
+        choices=UserRoles.choices,
+        default=UserRoles.USRER,
+        max_length=10
     )
     bio = models.TextField(blank=True, null=True)
     confirmation_code = models.CharField(
@@ -34,12 +36,12 @@ class User(AbstractUser):
         null=True
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         blank=True,
         null=True,
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         blank=True,
         null=True,
     )
@@ -54,47 +56,42 @@ class User(AbstractUser):
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == self.UserRoles.MODERATOR or self.is_staff
 
     @property
     def is_admin(self):
-        return (self.role == 'admin') or self.is_staff
+        return ((self.role == self.UserRoles.ADMIN) or self.is_superuser
+                or self.is_staff)
 
 
-class Category(models.Model):
+class BaseCategoryGenre(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=256
-    )
-    slug = models.SlugField(
-        verbose_name='Slug категории',
+        max_length=256,
         unique=True,
     )
-
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
-
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=256
-    )
     slug = models.SlugField(
-        verbose_name='Slug жанра',
+        verbose_name='Слаг',
         unique=True
     )
 
     class Meta:
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
+        abstract = True
 
     def __str__(self):
         return self.name
+
+
+class Category(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+
+class Genre(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
@@ -102,11 +99,11 @@ class Title(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    year = models.IntegerField(
+    year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
         validators=[
             MaxValueValidator(
-                timezone.now().year,
+                date.today().year,
                 message='Год создания не может быть позже нынешнего'
             ),
         ]
@@ -119,7 +116,6 @@ class Title(models.Model):
         Genre,
         related_name='titles',
         verbose_name='Жанр',
-        through='TitleGenre'
     )
     category = models.ForeignKey(
         Category,
@@ -150,7 +146,7 @@ class TitleGenre(models.Model):
     )
 
 
-class UserContent(models.Model):
+class ReviewCommentBase(models.Model):
     """Абстрактная модель для отзывов и комментариев"""
     author = models.ForeignKey(
         User,
@@ -170,8 +166,10 @@ class UserContent(models.Model):
         abstract = True
 
 
-class Review(UserContent):
+class Review(ReviewCommentBase):
     """Модель отзывов к произведениям"""
+    SCORE_ERROR_MESSAGE = "Оценка должна быть в диапазоне от 1 до 10"
+
     title = models.ForeignKey(
         Title,
         related_name='reviews',
@@ -181,9 +179,13 @@ class Review(UserContent):
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         blank=False,
+        validators=[
+            MinValueValidator(1, message=SCORE_ERROR_MESSAGE),
+            MaxValueValidator(10, message=SCORE_ERROR_MESSAGE)
+        ]
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -195,7 +197,7 @@ class Review(UserContent):
         return self.text
 
 
-class Comment(UserContent):
+class Comment(ReviewCommentBase):
     """Модель комментариев к отзывам"""
     review = models.ForeignKey(
         Review,
@@ -204,7 +206,7 @@ class Comment(UserContent):
         verbose_name='Отзыв'
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
