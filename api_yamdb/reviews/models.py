@@ -29,11 +29,6 @@ class User(AbstractUser):
         max_length=10
     )
     bio = models.TextField(blank=True, null=True)
-    confirmation_code = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True
-    )
     first_name = models.CharField(
         max_length=settings.MAX_LENGTH_FIELDS,
         blank=True,
