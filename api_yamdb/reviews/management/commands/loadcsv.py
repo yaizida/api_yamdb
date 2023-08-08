@@ -47,7 +47,8 @@ data_to_load_csv = {
 
 
 class Command(BaseCommand):
-    help = 'Импортирует данные из CSV файлов в базу данных'
+    help = '''Импортирует данные из CSV файлов в базу данных.
+        Без указания файла импортирует все.'''
 
     def csv_load(self, file_name):
         try:
@@ -86,7 +87,9 @@ class Command(BaseCommand):
             default=data_to_load_csv.keys(),
             type=str,
             nargs='*',
-            help='Название CSV файла'
+            help='''Названия CSV файлов, можно указать несколько.
+                При указании файла следует следить,
+                чтобы данные ссылались на существующий объект'''
         )
 
     def handle(self, *args, **options):

@@ -59,6 +59,7 @@ class User(AbstractUser):
 
 
 class BaseCategoryGenre(models.Model):
+    """Абстрактная модель для категорий и жанров"""
     name = models.CharField(
         verbose_name='Название',
         max_length=256,
@@ -77,18 +78,21 @@ class BaseCategoryGenre(models.Model):
 
 
 class Category(BaseCategoryGenre):
+    """Модель категорий"""
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(BaseCategoryGenre):
+    """Модель жанров"""
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
+    """Модель произведений"""
     name = models.CharField(
         verbose_name='Название',
         max_length=256
@@ -125,19 +129,6 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class TitleGenre(models.Model):
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.CASCADE,
-        related_name='genres'
-    )
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.CASCADE,
-        related_name='title'
-    )
 
 
 class ReviewCommentBase(models.Model):
