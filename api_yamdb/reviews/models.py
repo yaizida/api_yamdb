@@ -7,7 +7,6 @@ from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
-
 class User(AbstractUser):
 
     class UserRoles(models.TextChoices):
