@@ -3,7 +3,7 @@ from datetime import date
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 ROLES_CHOICES = (
     ('user', 'Пользователь'),
@@ -131,7 +131,20 @@ class Title(models.Model):
         return self.name
 
 
-class UserContent(models.Model):
+class TitleGenre(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='genres'
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='title'
+    )
+
+
+class ReviewCommentBase(models.Model):
     """Абстрактная модель для отзывов и комментариев"""
     author = models.ForeignKey(
         User,
@@ -151,8 +164,10 @@ class UserContent(models.Model):
         abstract = True
 
 
-class Review(UserContent):
+class Review(ReviewCommentBase):
     """Модель отзывов к произведениям"""
+    SCORE_ERROR_MESSAGE = "Оценка должна быть в диапазоне от 1 до 10"
+
     title = models.ForeignKey(
         Title,
         related_name='reviews',
@@ -162,9 +177,13 @@ class Review(UserContent):
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         blank=False,
+        validators=[
+            MinValueValidator(1, message=SCORE_ERROR_MESSAGE),
+            MaxValueValidator(10, message=SCORE_ERROR_MESSAGE)
+        ]
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -176,7 +195,7 @@ class Review(UserContent):
         return self.text
 
 
-class Comment(UserContent):
+class Comment(ReviewCommentBase):
     """Модель комментариев к отзывам"""
     review = models.ForeignKey(
         Review,
@@ -185,7 +204,7 @@ class Comment(UserContent):
         verbose_name='Отзыв'
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
