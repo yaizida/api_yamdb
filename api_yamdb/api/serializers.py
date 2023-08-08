@@ -66,7 +66,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class TitleGetSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     "Сериализатор для GET запроса"
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
@@ -80,7 +80,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
         model = Title
 
 
-class TitleEditSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     "Сериализатор для ввода, изменения и удаления данных"
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -107,14 +107,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'text', 'author', 'score', 'pub_date']
-
-    def validate_score(self, value):
-        """Проверка оценки"""
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                "Оценка должна быть в диапазоне от 1 до 10"
-            )
-        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):

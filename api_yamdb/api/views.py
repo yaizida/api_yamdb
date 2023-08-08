@@ -22,8 +22,8 @@ from .mixins import CategoryGenreMixinSet
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleGetSerializer,
-    TitleEditSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
     ReviewSerializer,
     CommentSerializer
 )
@@ -158,8 +158,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return TitleGetSerializer
-        return TitleEditSerializer
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(BaseViewSet):

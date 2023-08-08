@@ -1,9 +1,11 @@
-from django.utils import timezone
+from datetime import date
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator
 from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 
 class User(AbstractUser):
@@ -62,40 +64,34 @@ class User(AbstractUser):
                 or self.is_staff)
 
 
-class Category(models.Model):
+class BaseCategoryGenre(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=256
-    )
-    slug = models.SlugField(
-        verbose_name='Slug категории',
+        max_length=256,
         unique=True,
     )
-
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
-
-    def __str__(self):
-        return self.name
-
-
-class Genre(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=256
-    )
     slug = models.SlugField(
-        verbose_name='Slug жанра',
+        verbose_name='Слаг',
         unique=True
     )
 
     class Meta:
-        verbose_name = 'Жанр'
-        verbose_name_plural = 'Жанры'
+        abstract = True
 
     def __str__(self):
         return self.name
+
+
+class Category(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+
+class Genre(BaseCategoryGenre):
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
@@ -103,11 +99,11 @@ class Title(models.Model):
         verbose_name='Название',
         max_length=256
     )
-    year = models.IntegerField(
+    year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
         validators=[
             MaxValueValidator(
-                timezone.now().year,
+                date.today().year,
                 message='Год создания не может быть позже нынешнего'
             ),
         ]
@@ -120,7 +116,6 @@ class Title(models.Model):
         Genre,
         related_name='titles',
         verbose_name='Жанр',
-        through='TitleGenre'
     )
     category = models.ForeignKey(
         Category,
@@ -151,7 +146,7 @@ class TitleGenre(models.Model):
     )
 
 
-class UserContent(models.Model):
+class ReviewCommentBase(models.Model):
     """Абстрактная модель для отзывов и комментариев"""
     author = models.ForeignKey(
         User,
@@ -171,8 +166,10 @@ class UserContent(models.Model):
         abstract = True
 
 
-class Review(UserContent):
+class Review(ReviewCommentBase):
     """Модель отзывов к произведениям"""
+    SCORE_ERROR_MESSAGE = "Оценка должна быть в диапазоне от 1 до 10"
+
     title = models.ForeignKey(
         Title,
         related_name='reviews',
@@ -182,9 +179,13 @@ class Review(UserContent):
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         blank=False,
+        validators=[
+            MinValueValidator(1, message=SCORE_ERROR_MESSAGE),
+            MaxValueValidator(10, message=SCORE_ERROR_MESSAGE)
+        ]
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -196,7 +197,7 @@ class Review(UserContent):
         return self.text
 
 
-class Comment(UserContent):
+class Comment(ReviewCommentBase):
     """Модель комментариев к отзывам"""
     review = models.ForeignKey(
         Review,
@@ -205,7 +206,7 @@ class Comment(UserContent):
         verbose_name='Отзыв'
     )
 
-    class Meta(UserContent.Meta):
+    class Meta(ReviewCommentBase.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 

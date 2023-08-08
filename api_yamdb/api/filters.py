@@ -16,6 +16,10 @@ class TitleFilter(filters.FilterSet):
         field_name='genre__slug',
         lookup_expr='iexact'
     )
+    year = filters.NumberFilter(
+        field_name='year',
+        lookup_expr='iexact'
+    )
 
     class Meta:
         model = Title
