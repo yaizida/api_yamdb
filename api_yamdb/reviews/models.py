@@ -1,12 +1,11 @@
-from datetime import date
-
 from django.conf import settings
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 
 from reviews.validators import (unicode_username_validator,
-                                validate_non_reserved)
+                                validate_non_reserved,
+                                validate_year)
 
 
 class User(AbstractUser):
@@ -60,6 +59,7 @@ class User(AbstractUser):
 
 
 class BaseCategoryGenre(models.Model):
+    """Абстрактная модель для категорий и жанров"""
     name = models.CharField(
         verbose_name='Название',
         max_length=256,
@@ -78,30 +78,28 @@ class BaseCategoryGenre(models.Model):
 
 
 class Category(BaseCategoryGenre):
+    """Модель категорий"""
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(BaseCategoryGenre):
+    """Модель жанров"""
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
+    """Модель произведений"""
     name = models.CharField(
         verbose_name='Название',
         max_length=256
     )
     year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
-        validators=[
-            MaxValueValidator(
-                date.today().year,
-                message='Год создания не может быть позже нынешнего'
-            ),
-        ]
+        validators=[validate_year]
     )
     description = models.TextField(
         verbose_name='Описание',
@@ -126,19 +124,6 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class TitleGenre(models.Model):
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.CASCADE,
-        related_name='genres'
-    )
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.CASCADE,
-        related_name='title'
-    )
 
 
 class ReviewCommentBase(models.Model):
