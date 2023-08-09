@@ -28,7 +28,7 @@ from .serializers import (
     CommentSerializer
 )
 from .serializers import (UserSerializer, GetAuthTokenSerializer,
-                          SignUpSerializer, UserProfileSerializer)
+                          SignUpSerializer)
 from .permissions import (
     IsAuthorOrAdminOrModerator,
     AdminOnly,
@@ -103,7 +103,7 @@ class UserViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserProfileSerializer(
+        serializer = UserSerializer(
             request.user, partial=True, data=request.data
         )
         if not serializer.is_valid():
@@ -111,7 +111,7 @@ class UserViewSet(ModelViewSet):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
         if request.method == "PATCH":
-            serializer.save()
+            serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -197,3 +197,8 @@ class CommentViewSet(BaseViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.get_review_id())
         serializer.save(author=self.request.user, review=review)
+
+
+def __init__(self, you='Ты', who='Лох'):
+    self.you = you
+    self.who = who

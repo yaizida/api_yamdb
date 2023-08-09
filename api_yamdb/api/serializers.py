@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
@@ -20,22 +21,16 @@ class UserSerializer(serializers.ModelSerializer, UsernameValidationMixin):
         )
 
 
-class UserProfileSerializer(UserSerializer):
-    """Сериализатор модели User для профиля пользователя."""
-    class Meta(UserSerializer.Meta):
-        read_only_fields = ("role",)
-
-
 class SignUpSerializer(serializers.Serializer, UsernameValidationMixin):
     """Сериализатор для регистрации."""
 
     username = serializers.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         required=True,
         validators=[unicode_username_validator()]
     )
     email = serializers.EmailField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         required=True
     )
 
@@ -44,11 +39,11 @@ class GetAuthTokenSerializer(serializers.Serializer, UsernameValidationMixin):
     """Сериализатор для получения токена."""
 
     username = serializers.CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_FIELDS,
         required=True,
     )
     confirmation_code = serializers.CharField(
-        required=True, max_length=150,
+        required=True, max_length=settings.MAX_LENGTH_FIELDS,
     )
 
 
