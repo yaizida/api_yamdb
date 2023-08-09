@@ -1,9 +1,11 @@
-from datetime import date
-
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
+from reviews.validators import (
+    UsernameRegexValidator,
+    validate_non_reserved,
+    validate_year
+)
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -99,12 +101,7 @@ class Title(models.Model):
     )
     year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
-        validators=[
-            MaxValueValidator(
-                date.today().year,
-                message='Год создания не может быть позже нынешнего'
-            ),
-        ]
+        validators=[validate_year]
     )
     description = models.TextField(
         verbose_name='Описание',

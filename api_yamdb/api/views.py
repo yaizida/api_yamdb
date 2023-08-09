@@ -16,9 +16,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework import mixins
 
 from reviews.models import Category, Genre, Title, Review, Comment
-from .mixins import CategoryGenreMixinSet
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -129,7 +129,19 @@ class BaseViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
-class CategoryViewSet(CategoryGenreMixinSet):
+class BaseCategoryGenreViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    pagination_class = LimitOffsetPagination
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', )
+    lookup_field = 'slug'
+
+
+class CategoryViewSet(BaseCategoryGenreViewSet):
     """ViewSet для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -137,7 +149,7 @@ class CategoryViewSet(CategoryGenreMixinSet):
     pagination_class = LimitOffsetPagination
 
 
-class GenreViewSet(CategoryGenreMixinSet):
+class GenreViewSet(BaseCategoryGenreViewSet):
     """ViewSet для жанров."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
