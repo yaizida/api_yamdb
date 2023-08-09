@@ -2,9 +2,11 @@ from datetime import date
 
 from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from reviews.validators import (UsernameRegexValidator, validate_non_reserved)
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import AbstractUser
+
+from reviews.validators import (unicode_username_validator,
+                                validate_non_reserved)
 
 
 class User(AbstractUser):
@@ -17,7 +19,7 @@ class User(AbstractUser):
     username = models.CharField(
         unique=True,
         max_length=settings.MAX_LENGTH_FIELDS,
-        validators=[UsernameRegexValidator(), validate_non_reserved],
+        validators=[unicode_username_validator(), validate_non_reserved],
     )
     email = models.EmailField(
         unique=True,
@@ -26,7 +28,7 @@ class User(AbstractUser):
     role = models.CharField(
         choices=UserRoles.choices,
         default=UserRoles.USRER,
-        max_length=10
+        max_length=settings.MAX_ROLE_LENGHT
     )
     bio = models.TextField(blank=True, null=True)
     first_name = models.CharField(
@@ -54,8 +56,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return ((self.role == self.UserRoles.ADMIN) or self.is_superuser
-                or self.is_staff)
+        return (self.role == self.UserRoles.ADMIN) or self.is_superuser
 
 
 class BaseCategoryGenre(models.Model):

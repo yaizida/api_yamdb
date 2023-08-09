@@ -15,6 +15,9 @@ def validate_non_reserved(value):
     return value
 
 
+unicode_username_validator = UnicodeUsernameValidator
+
+
 class UsernameRegexValidator(UnicodeUsernameValidator):
     regex = r'^[\w.@+-]+\Z'
     flags = 0

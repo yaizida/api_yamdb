@@ -61,9 +61,8 @@ class CreateUserView(CreateAPIView):
         except IntegrityError:
             raise ValidationError(ERROR_SIGNUP_USERNAME_OR_MAIL)
         confirmation_code = default_token_generator.make_token(user)
-        user.confirmation_code = confirmation_code
         user.save()
-        send_email(user.email, user.confirmation_code)
+        send_email(user.email, confirmation_code)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

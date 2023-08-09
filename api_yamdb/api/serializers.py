@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
 from .mixins import UsernameValidationMixin
-from reviews.validators import UnicodeUsernameValidator
+from reviews.validators import unicode_username_validator
 
 
 class UserSerializer(serializers.ModelSerializer, UsernameValidationMixin):
@@ -32,7 +32,7 @@ class SignUpSerializer(serializers.Serializer, UsernameValidationMixin):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[UnicodeUsernameValidator()]
+        validators=[unicode_username_validator()]
     )
     email = serializers.EmailField(
         max_length=150,
