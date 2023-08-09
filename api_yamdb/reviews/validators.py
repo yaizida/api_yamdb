@@ -18,14 +18,17 @@ def validate_non_reserved(value):
     return value
 
 
+unicode_username_validator = UnicodeUsernameValidator
+
+
+class UsernameRegexValidator(UnicodeUsernameValidator):
+    regex = r'^[\w.@+-]+\Z'
+    flags = 0
+
+
 def validate_year(value):
     current_year = timezone.now().year
     if current_year < value <= 0:
         raise ValidationError(
             ERROR_WRONG_YEAR.format(current_year=current_year)
         )
-
-
-class UsernameRegexValidator(UnicodeUsernameValidator):
-    regex = r'^[\w.@+-]+\Z'
-    flags = 0
