@@ -8,8 +8,7 @@ class AdminOnly(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.is_admin or request.user.is_superuser)
+        return request.user.is_authenticated and request.user.is_superuser
 
 
 class IsAuthorOrAdminOrModerator(permissions.BasePermission):
@@ -19,7 +18,6 @@ class IsAuthorOrAdminOrModerator(permissions.BasePermission):
             return True
         return (
             request.user == obj.author
-            or request.user.is_staff
             or request.user.is_moderator
             or request.user.is_admin
         )
