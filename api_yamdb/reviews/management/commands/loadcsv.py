@@ -1,48 +1,86 @@
 import csv
 
-from django.db import connection
 from django.core.management import BaseCommand
 from django.db.utils import IntegrityError
+
+from reviews.models import (
+    User,
+    Category,
+    Genre,
+    Title,
+    Review,
+    Comment
+)
 
 FILE_PATH = 'static/data/'
 
 data_to_load_csv = {
-    'users':
-    """
-    INSERT INTO reviews_user
-    (id,username,email,role,bio,first_name,last_name,password,is_superuser,is_staff,is_active,date_joined)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, '', '', '', '', '')
-    """,
-    'category':
-    """
-    INSERT INTO reviews_category (id,name,slug)
-    VALUES (%s, %s, %s)
-    """,
-    'genre':
-    """
-    INSERT INTO reviews_genre (id,name,slug)
-    VALUES (%s, %s, %s)
-    """,
-    'titles':
-    """
-    INSERT INTO reviews_title (id,name,year,category_id)
-    VALUES (%s, %s, %s, %s)
-    """,
-    'genre_title':
-    """
-    INSERT INTO reviews_title_genre (id,title_id,genre_id)
-    VALUES (%s, %s, %s)
-    """,
-    'review':
-    """
-    INSERT INTO reviews_review (id,title_id,text,author_id,score,pub_date)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """,
-    'comments':
-    """
-    INSERT INTO reviews_comment (id,review_id,text,author_id,pub_date)
-    VALUES (%s, %s, %s, %s, %s)
-    """,
+    'users': [
+        User,
+        [
+            'id',
+            'username',
+            'email',
+            'role',
+            'bio',
+            'first_name',
+            'last_name',
+        ]
+    ],
+    'category': [
+        Category,
+        [
+            'id',
+            'name',
+            'slug',
+        ]
+    ],
+    'genre': [
+        Genre,
+        [
+            'id',
+            'name',
+            'slug',
+        ]
+    ],
+    'titles': [
+        Title,
+        [
+            'id',
+            'name',
+            'year',
+            'category_id',
+        ]
+    ],
+    'genre_title': [
+        Title.genre.through,
+        [
+            'id',
+            'title_id',
+            'genre_id',
+        ]
+    ],
+    'review': [
+        Review,
+        [
+            'id',
+            'title_id',
+            'text',
+            'author_id',
+            'score',
+            'pub_date',
+        ]
+    ],
+    'comments': [
+        Comment,
+        [
+            'id',
+            'review_id',
+            'text',
+            'author_id',
+            'pub_date',
+        ]
+    ]
 }
 
 
@@ -50,25 +88,19 @@ class Command(BaseCommand):
     help = '''Импортирует данные из CSV файлов в базу данных.
         Без указания файла импортирует все.'''
 
-    def csv_load(self, file_name):
+    def csv_load(self, file_name, model, fields):
         try:
             with open(f'{FILE_PATH}{file_name}.csv', encoding='utf-8') as file:
                 reader = csv.reader(file)
                 next(reader)
-                data = []
-                for row in reader:
-                    data.append(row)
-                with connection.cursor() as cursor:
-                    cursor.executemany(
-                        data_to_load_csv[file_name],
-                        data
-                    )
-                    connection.commit()
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f'Данные из файла {file_name}.csv успешно записанны'
-                    )
-                )
+                objects = [
+                    model(**dict(zip(fields, row)))
+                    for row in reader
+                ]
+                model.objects.bulk_create(objects)
+            self.stdout.write(self.style.SUCCESS(
+                f'Данные из файла {file_name} загружены в базу данных.')
+            )
         except IntegrityError as error:
             msg = f'Ошибка при записи данных из {file_name}.csv:{error}'
             raise IntegrityError(self.style.ERROR(msg))
@@ -94,4 +126,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for csv_name in options['csv_names']:
-            self.csv_load(csv_name)
+            data = data_to_load_csv[csv_name]
+            self.csv_load(csv_name, *data)
