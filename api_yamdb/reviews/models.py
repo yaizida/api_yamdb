@@ -62,7 +62,7 @@ class BaseCategoryGenre(models.Model):
     """Абстрактная модель для категорий и жанров"""
     name = models.CharField(
         verbose_name='Название',
-        max_length=256,
+        max_length=settings.CATEGORY_GENRE_TITLE_NAME_LENGTH,
         unique=True,
     )
     slug = models.SlugField(
@@ -95,7 +95,7 @@ class Title(models.Model):
     """Модель произведений"""
     name = models.CharField(
         verbose_name='Название',
-        max_length=256
+        max_length=settings.CATEGORY_GENRE_TITLE_NAME_LENGTH
     )
     year = models.PositiveSmallIntegerField(
         verbose_name='Год создания',
