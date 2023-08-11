@@ -106,10 +106,7 @@ class UserViewSet(ModelViewSet):
         serializer = UserSerializer(
             request.user, partial=True, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
         if request.method == "PATCH":
             serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
