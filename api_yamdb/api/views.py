@@ -209,8 +209,3 @@ class CommentViewSet(BaseViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, id=self.get_review_id())
         serializer.save(author=self.request.user, review=review)
-
-
-def __init__(self, you='Ты', who='Лох'):
-    self.you = you
-    self.who = who
