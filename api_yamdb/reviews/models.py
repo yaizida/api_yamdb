@@ -11,9 +11,9 @@ from reviews.validators import (unicode_username_validator,
 class User(AbstractUser):
 
     class UserRoles(models.TextChoices):
-        USRER = 'user', ('User')
-        MODERATOR = 'moderator', ('Moderator')
-        ADMIN = 'admin', ('Admin')
+        USRER = 'user', 'User'
+        MODERATOR = 'moderator', 'Moderator'
+        ADMIN = 'admin', 'Admin'
 
     username = models.CharField(
         unique=True,
