@@ -158,7 +158,6 @@ class Review(ReviewCommentBase):
     )
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
-        blank=False,
         validators=[
             MinValueValidator(1, message=SCORE_ERROR_MESSAGE),
             MaxValueValidator(10, message=SCORE_ERROR_MESSAGE)
