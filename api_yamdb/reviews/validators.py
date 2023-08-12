@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils import timezone
 
 
@@ -16,9 +15,6 @@ def validate_non_reserved(value):
     if value in settings.RESERVED_USERNAMES:
         raise ValidationError(ERROR_USERNAME_RESERVED.format(value=value))
     return value
-
-
-unicode_username_validator = UnicodeUsernameValidator
 
 
 def validate_year(value):
