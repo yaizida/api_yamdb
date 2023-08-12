@@ -19,7 +19,7 @@ def validate_non_reserved(value):
 
 def validate_year(value):
     current_year = timezone.now().year
-    if current_year < value <= 0:
+    if not (0 < value <= current_year):
         raise ValidationError(
             ERROR_WRONG_YEAR.format(current_year=current_year)
         )
