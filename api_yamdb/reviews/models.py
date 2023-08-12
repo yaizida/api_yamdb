@@ -2,23 +2,22 @@ from django.conf import settings
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
-from reviews.validators import (unicode_username_validator,
-                                validate_non_reserved,
-                                validate_year)
+from reviews.validators import (validate_non_reserved, validate_year)
 
 
 class User(AbstractUser):
 
     class UserRoles(models.TextChoices):
-        USRER = 'user', 'User'
+        USER = 'user', 'User'
         MODERATOR = 'moderator', 'Moderator'
         ADMIN = 'admin', 'Admin'
 
     username = models.CharField(
         unique=True,
         max_length=settings.MAX_LENGTH_FIELDS,
-        validators=[unicode_username_validator(), validate_non_reserved],
+        validators=[UnicodeUsernameValidator(), validate_non_reserved],
     )
     email = models.EmailField(
         unique=True,
@@ -26,7 +25,7 @@ class User(AbstractUser):
     )
     role = models.CharField(
         choices=UserRoles.choices,
-        default=UserRoles.USRER,
+        default=UserRoles.USER,
         max_length=settings.MAX_ROLE_LENGHT
     )
     bio = models.TextField(blank=True, null=True)
